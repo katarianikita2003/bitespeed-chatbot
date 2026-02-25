@@ -5,9 +5,9 @@ import ReactFlow, {
   Controls,
   Background,
 } from "reactflow";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ReactFlowProvider } from "reactflow";
-import { useCallback, useRef } from "react";
+
 import TextNode from "./nodes/TextNode";
 import NodesPanel from "./panels/NodesPanel";
 
@@ -17,31 +17,40 @@ const nodeTypes = {
   textNode: TextNode,
 };
 
-function FlowCanvas() {
+function FlowCanvas({
+  nodes,
+  setNodes,
+  onNodesChange,
+  edges,
+  setEdges,
+  onEdgesChange,
+  selectedNode,
+  setSelectedNode,
+}) {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  // Restrict only one outgoing edge
+  const onConnect = useCallback(
+    (params) => {
+      setEdges((eds) => {
+        const sourceAlreadyConnected = eds.some(
+          (edge) => edge.source === params.source
+        );
 
-  const onConnect = useCallback((params) => {
-    setEdges((eds) => {
-      const sourceAlreadyConnected = eds.some(
-        (edge) => edge.source === params.source
-      );
+        if (sourceAlreadyConnected) {
+          alert("This node already has an outgoing connection.");
+          return eds;
+        }
 
-      if (sourceAlreadyConnected) {
-        alert("This node already has an outgoing connection.");
-        return eds;
-      }
-
-      return addEdge(params, eds);
-    });
-  }, []);
+        return addEdge(params, eds);
+      });
+    },
+    [setEdges]
+  );
 
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
-
       if (!reactFlowInstance) return;
 
       const type = event.dataTransfer.getData("application/reactflow");
@@ -61,8 +70,20 @@ function FlowCanvas() {
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [reactFlowInstance]
+    [reactFlowInstance, setNodes]
   );
+
+  const onNodeClick = (event, node) => {
+    setSelectedNode(node);
+  };
+
+  const styledNodes = nodes.map((node) => ({
+  ...node,
+  style:
+    selectedNode && node.id === selectedNode.id
+      ? { border: "2px solid #007bff" }
+      : {},
+}));
 
   return (
     <div
@@ -71,12 +92,13 @@ function FlowCanvas() {
       onDragOver={(event) => event.preventDefault()}
     >
       <ReactFlow
-        nodes={nodes}
+        nodes={styledNodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onInit={setReactFlowInstance}
+        onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
       >
         <Controls />
@@ -87,13 +109,33 @@ function FlowCanvas() {
 }
 
 export default function App() {
+  const [selectedNode, setSelectedNode] = useState(null);
+
+  // 🔥 Nodes state lifted here
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
   return (
     <ReactFlowProvider>
       <div style={{ display: "flex", height: "100vh" }}>
         <div style={{ flex: 1 }}>
-          <FlowCanvas />
+          <FlowCanvas
+            nodes={nodes}
+            setNodes={setNodes}
+            onNodesChange={onNodesChange}
+            edges={edges}
+            setEdges={setEdges}
+            onEdgesChange={onEdgesChange}
+            selectedNode={selectedNode}
+            setSelectedNode={setSelectedNode}
+          />
         </div>
-        <NodesPanel />
+
+        <NodesPanel
+          selectedNode={selectedNode}
+          setSelectedNode={setSelectedNode}
+          setNodes={setNodes}
+        />
       </div>
     </ReactFlowProvider>
   );
