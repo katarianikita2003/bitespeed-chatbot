@@ -29,7 +29,15 @@ function FlowCanvas({
 }) {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
-  // Restrict only one outgoing edge
+  // Highlight selected node
+  const styledNodes = nodes.map((node) => ({
+    ...node,
+    style:
+      selectedNode && node.id === selectedNode.id
+        ? { border: "2px solid #007bff" }
+        : { border: "1px solid #222" },
+  }));
+
   const onConnect = useCallback(
     (params) => {
       setEdges((eds) => {
@@ -73,17 +81,9 @@ function FlowCanvas({
     [reactFlowInstance, setNodes]
   );
 
-  const onNodeClick = (event, node) => {
+  const onNodeClick = (_, node) => {
     setSelectedNode(node);
   };
-
-  const styledNodes = nodes.map((node) => ({
-  ...node,
-  style:
-    selectedNode && node.id === selectedNode.id
-      ? { border: "2px solid #007bff" }
-      : {},
-}));
 
   return (
     <div
@@ -111,7 +111,6 @@ function FlowCanvas({
 export default function App() {
   const [selectedNode, setSelectedNode] = useState(null);
 
-  // 🔥 Nodes state lifted here
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 

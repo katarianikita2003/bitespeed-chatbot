@@ -5,34 +5,17 @@ export default function TextNode({ data }) {
     <div
       style={{
         padding: "10px",
-        border: "1px solid #222",
-        borderRadius: "8px",
+        borderRadius: "6px",
         background: "white",
-        width: "180px",
+        minWidth: "150px",
       }}
     >
-      <div
-        style={{
-          fontWeight: "bold",
-          marginBottom: "5px",
-        }}
-      >
-        Send Message
-      </div>
+      <Handle type="target" position={Position.Left} />
 
-      <div>{data.label}</div>
+      <strong>Send Message</strong>
+      <div style={{ marginTop: "5px" }}>{data.label}</div>
 
-      {/* Target Handle (Left) */}
-      <Handle
-        type="target"
-        position={Position.Left}
-      />
-
-      {/* Source Handle (Right) */}
-      <Handle
-        type="source"
-        position={Position.Right}
-      />
+      <Handle type="source" position={Position.Right} />
     </div>
   );
 }

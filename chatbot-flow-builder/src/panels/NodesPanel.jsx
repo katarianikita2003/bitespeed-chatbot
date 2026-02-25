@@ -7,14 +7,12 @@ export default function NodesPanel({
 }) {
   const [text, setText] = useState("");
 
-  // Sync textarea when a new node is selected
   useEffect(() => {
     if (selectedNode) {
       setText(selectedNode.data.label);
     }
   }, [selectedNode]);
 
-  // 🔥 Drag handler (THIS WAS MISSING)
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
@@ -33,30 +31,30 @@ export default function NodesPanel({
     );
 
     setSelectedNode((prev) =>
-      prev
-        ? { ...prev, data: { ...prev.data, label: newText } }
-        : null
+      prev ? { ...prev, data: { ...prev.data, label: newText } } : null
     );
   };
 
-  // ✨ EDIT MODE
   if (selectedNode) {
     return (
       <div style={panelStyle}>
         <button onClick={() => setSelectedNode(null)}>← Back</button>
 
-        <h3>Message</h3>
+        <h3 style={{ marginTop: "20px" }}>Message</h3>
 
         <textarea
           value={text}
           onChange={handleChange}
-          style={{ width: "100%", marginTop: "10px" }}
+          style={{
+            width: "100%",
+            marginTop: "10px",
+            padding: "8px",
+          }}
         />
       </div>
     );
   }
 
-  // ✨ DEFAULT MODE
   return (
     <div style={panelStyle}>
       <h3>Nodes</h3>
